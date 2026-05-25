@@ -1,7 +1,7 @@
 plugin: google.cloud.gcp_compute
 projects:
-  - 836999621873 # Replace with your actual GCP Project ID
-auth_kind: machineaccount
+  - project-0d94d8bf-842c-4e18-818 # Replace with your actual GCP Project ID
+auth_kind: application
 keyed_groups:
   - prefix: gcp
     key: labels
