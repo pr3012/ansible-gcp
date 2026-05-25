@@ -1,0 +1,15 @@
+---
+- name: Create user and group on servers
+  hosts: all
+  tasks:
+    - name: create group
+      ansible.builtin.group: 
+        name: jboss
+        state: present
+    - name: create user
+      ansible.builtin.user: 
+        name: jboss
+        state: present
+        shell: /bin/bash
+        create_home: true
+        home: /home/jboss
