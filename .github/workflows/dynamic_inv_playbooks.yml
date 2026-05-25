@@ -71,4 +71,4 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
         run: |
-          ansible-playbook -i inventory.gcp.yml user-group.yml
+          ansible-playbook -i inventory.gcp.yml reboot.yml
