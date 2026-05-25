@@ -1,5 +1,6 @@
 - name: Reboot Linux servers
   hosts: all
+  become: true
   tasks:
     - name: reboot
       ansible.builtin.reboot:
