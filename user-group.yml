@@ -28,7 +28,6 @@
         mode: 0440
         line: "%jboss ALL=(ALL) NOPASSWD: ALL"
         validate: /usr/sbin/visudo -cf %s
-  block:
     - name: Enable password auth
       ansible.builtin.lineinfile:
         path: /etc/ssh/sshd_config
@@ -39,4 +38,4 @@
         path: /etc/ssh/sshd_config
         regexp: "^PermitRootLogin"
         line: "PermitRootLogin yes"
-  notify: restart-sshd
+      notify: restart-sshd
