@@ -1,0 +1,11 @@
+plugin: google.cloud.gcp_compute
+projects:
+  - 836999621873 # Replace with your actual GCP Project ID
+auth_kind: machineaccount
+keyed_groups:
+  - prefix: gcp
+    key: labels
+hostnames:
+  - name
+compose:
+  ansible_host: networkInterfaces[0].accessConfigs[0].natIP # Uses Public IP. Change to networkInterfaces[0].networkIP for Private IP.
