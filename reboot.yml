@@ -1,0 +1,7 @@
+- name: Reboot Linux servers
+  hosts: all
+  ansible.builtin.reboot:
+    msg: "Rebooting for kernel updates"
+    pre_reboot_delay: 0
+    post_reboot_delay: 30
+    reboot_timeout: 600
