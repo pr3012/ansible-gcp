@@ -1,7 +1,5 @@
 name: Fetch GCP Inventory
 on:
-  push:
-    branches: [ main ]
   workflow_dispatch: # Allows you to run this manually from the GitHub UI
 
 permissions:
