@@ -28,29 +28,64 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install Ansible and dependencies
         run: |
-          pip install ansible google-auth requests
+          pip install ansible google-auth requests pyyaml
           ansible-galaxy collection install google.cloud
 
-      - name: Generate inventory file
+      - name: Generate inventory JSON
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
         run: |
           ansible-inventory -i inventory.gcp.yml --list > inventory-output.json
 
-      - name: Convert inventory to YAML
+      - name: Build clean inventory file
         run: |
-          python - <<EOF
+          python <<EOF
           import json
           import yaml
 
           with open("inventory-output.json") as f:
               data = json.load(f)
 
+          hostvars = data.get("_meta", {}).get("hostvars", {})
+
+          inventory = {
+              "all": {
+                  "children": {
+                      "gcp_vms": {
+                          "hosts": {}
+                      }
+                  }
+              }
+          }
+
+          hosts = inventory["all"]["children"]["gcp_vms"]["hosts"]
+
+          for hostname, vars in hostvars.items():
+              ansible_host = vars.get("ansible_host")
+
+              if not ansible_host:
+                  continue
+
+              zone = vars.get("zone", "")
+              if "/" in zone:
+                  zone = zone.split("/")[-1]
+
+              hosts[hostname] = {
+                  "ansible_host": ansible_host,
+                  "zone": zone
+              }
+
           with open("inventory.yml", "w") as f:
-              yaml.dump(data, f, default_flow_style=False)
+              yaml.dump(inventory, f, sort_keys=False)
+
+          print("Generated inventory.yml")
           EOF
+
+      - name: Show generated inventory
+        run: |
+          cat inventory.yml
 
       - name: Commit updated inventory
         run: |
