@@ -51,11 +51,15 @@ jobs:
         run: |
           ansible-inventory -i inventory.gcp.yml --list > hosts.json
 
-          jq -r '._meta.hostvars[].ansible_host // empty' hosts.json | while read host; do
-            if [ ! -z "$host" ]; then
-              echo "Adding SSH host key for $host"
-              ssh-keyscan -H "$host" >> ~/.ssh/known_hosts 2>/dev/null
-            fi
+          cat hosts.json
+
+          jq -r '._meta.hostvars | to_entries[] | .value.ansible_host' hosts.json | while read host; do
+          if [[ "$host" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "Adding SSH host key for $host"
+          ssh-keyscan -H "$host" >> ~/.ssh/known_hosts 2>/dev/null
+          else
+          echo "Skipping invalid host: $host"
+          fi
           done
 
       - name: Test Ansible connectivity
