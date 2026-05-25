@@ -1,0 +1,64 @@
+name: Fetch GCP Inventory
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/836999621873/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: ansible-gcp@project-0d94d8bf-842c-4e18-818.iam.gserviceaccount.com
+          create_credentials_file: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install ansible google-auth requests
+          ansible-galaxy collection install google.cloud
+
+      - name: Generate inventory file
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+        run: |
+          ansible-inventory -i inventory.gcp.yml --list > inventory-output.json
+
+      - name: Convert inventory to YAML
+        run: |
+          python - <<EOF
+          import json
+          import yaml
+
+          with open("inventory-output.json") as f:
+              data = json.load(f)
+
+          with open("inventory.yml", "w") as f:
+              yaml.dump(data, f, default_flow_style=False)
+          EOF
+
+      - name: Commit updated inventory
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add inventory.yml
+
+          git diff --cached --quiet || git commit -m "Update GCP inventory"
+
+          git push
