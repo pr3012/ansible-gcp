@@ -1,0 +1,40 @@
+name: Fetch GCP Inventory
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: # Allows you to run this manually from the GitHub UI
+
+permissions:
+  contents: read
+  id-token: write # Mandatory for Keyless WIF authentication
+
+jobs:
+  inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/836999621873/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: 'ansible-gcp@project-0d94d8bf-842c-4e18-818.iam.gserviceaccount.com' # Replace with your service account email
+          create_credentials_file: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Ansible and Dependencies
+        run: |
+          pip install google-auth requests ansible
+          ansible-galaxy collection install google.cloud
+
+      - name: Fetch and Graph Inventory
+        env:
+          GCP_CREDENTIAL_FILE: ${{ steps.auth.outputs.credentials_file_path }}
+        run: |
+          ansible-inventory -i inventory.gcp.yml --graph
