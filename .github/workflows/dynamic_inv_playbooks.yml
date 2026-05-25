@@ -67,3 +67,8 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
         run: |
           ansible all -i inventory.gcp.yml -m ping
+      - name: Create user and group
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+        run: |
+          ansible-playbook -i inventory.gcp.yml user-group .yml
