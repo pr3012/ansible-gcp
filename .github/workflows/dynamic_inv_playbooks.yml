@@ -1,0 +1,56 @@
+name: GCP Ansible Automation
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/836999621873/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+          service_account: ansible-gcp@project-0d94d8bf-842c-4e18-818.iam.gserviceaccount.com
+          create_credentials_file: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install ansible google-auth requests
+          ansible-galaxy collection install google.cloud
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.GCP_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Add VM host keys
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+        run: |
+          ansible-inventory -i inventory.gcp.yml --list > hosts.json
+
+          for host in $(jq -r '._meta.hostvars[].ansible_host' hosts.json); do
+            ssh-keyscan -H $host >> ~/.ssh/known_hosts
+          done
+
+      - name: Test connectivity
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+        run: |
+          ansible all -i inventory.gcp.yml -m ping
