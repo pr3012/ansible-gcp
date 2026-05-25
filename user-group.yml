@@ -14,3 +14,11 @@
         shell: /bin/bash
         create_home: true
         home: /home/jboss
+    - name: provide sudo privileges without password
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers.d/jboss
+        state: present
+        create: true
+        mode: 0440
+        line: "%jboss ALL=(ALL) NOPASSWD: ALL"
+        validate: /usr/sbin/visudo -cf %s
