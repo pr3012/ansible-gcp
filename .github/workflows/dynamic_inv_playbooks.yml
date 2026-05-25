@@ -28,10 +28,16 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install Ansible and dependencies
         run: |
           pip install ansible google-auth requests
           ansible-galaxy collection install google.cloud
+
+      - name: Verify inventory
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
+        run: |
+          ansible-inventory -i inventory.gcp.yml --graph
 
       - name: Setup SSH key
         run: |
@@ -45,11 +51,14 @@ jobs:
         run: |
           ansible-inventory -i inventory.gcp.yml --list > hosts.json
 
-          for host in $(jq -r '._meta.hostvars[].ansible_host' hosts.json); do
-            ssh-keyscan -H $host >> ~/.ssh/known_hosts
+          jq -r '._meta.hostvars[].ansible_host // empty' hosts.json | while read host; do
+            if [ ! -z "$host" ]; then
+              echo "Adding SSH host key for $host"
+              ssh-keyscan -H "$host" >> ~/.ssh/known_hosts 2>/dev/null
+            fi
           done
 
-      - name: Test connectivity
+      - name: Test Ansible connectivity
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
         run: |
