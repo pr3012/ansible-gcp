@@ -1,5 +1,6 @@
 - name: Reboot Linux servers
   hosts: all
+  tasks:
   ansible.builtin.reboot:
     msg: "Rebooting for kernel updates"
     pre_reboot_delay: 0
