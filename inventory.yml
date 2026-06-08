@@ -1,14 +1,4 @@
 all:
   children:
     gcp_vms:
-      hosts:
-        axw-control-node:
-          ansible_host:
-            __ansible_unsafe: 34.180.43.46
-          zone:
-            __ansible_unsafe: asia-south1-c
-        managednode1:
-          ansible_host:
-            __ansible_unsafe: 35.234.214.133
-          zone:
-            __ansible_unsafe: asia-south1-c
+      hosts: {}
