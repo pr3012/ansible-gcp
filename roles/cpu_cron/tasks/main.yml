@@ -1,9 +1,9 @@
 ---
 - name: Ensure cpu script is executable
+  become: true
   file:
     path: "{{ cpu_script_path }}"
     mode: '0755'
-    become: true
 
 - name: Schedule cron job for JBoss script
   cron:
