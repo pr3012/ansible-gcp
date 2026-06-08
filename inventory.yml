@@ -1,4 +1,9 @@
 all:
   children:
     gcp_vms:
-      hosts: {}
+      hosts:
+        instance-20260608-174250:
+          ansible_host:
+            __ansible_unsafe: 34.93.128.135
+          zone:
+            __ansible_unsafe: asia-south1-b
