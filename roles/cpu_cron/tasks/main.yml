@@ -1,0 +1,14 @@
+---
+- name: Ensure cpu script is executable
+  file:
+    path: "{{ cpu_script_path }}"
+    mode: '0755'
+    become: true
+
+- name: Schedule cron job for JBoss script
+  cron:
+    name: "{{ cpu_cron_name }}"
+    user: "{{ cpu_cron_user }}"
+    minute: "{{ cpu_cron_minute }}"
+    hour: "{{ cpu_cron_hour }}"
+    job: "{{ cpu_script_path }} >> /jboss/cron.log 2>&1"

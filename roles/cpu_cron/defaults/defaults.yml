@@ -1,0 +1,8 @@
+cpu_script_path: "/jboss/cpucheck.sh"
+cpu_cron_name: "Run cpu script"
+cpu_cron_minute: "*/2"
+cpu_cron_hour: "0"
+cpu_cron_day: "0"
+cpu_cron_month: "0"
+cpu_cron_weekday: "0"
+cpu_cron_user: "root"
